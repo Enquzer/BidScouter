@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BidScouter — Ethiopian Garment Tender Tracker</title>
+  
+  <!-- Favicon and Brand Icons -->
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=2.2"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png?v=2.2"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png?v=2.2"/>
+  <link rel="shortcut icon" href="/static/favicon.ico?v=2.2"/>
+  <link rel="apple-touch-icon" sizes="192x192" href="/static/favicon-192x192.png"/>
+  <meta name="theme-color" content="#0F172A"/>
+
+  <link rel="stylesheet" href="/static/css/style.css?v=2.2"/>
+</head>
+<body>
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img src="/static/favicon.svg?v=2.2" alt="BidScouter Logo" class="brand-logo-img"/>
+      <div class="brand-text-wrap">
+        <span class="logo-text">BidScouter</span>
+        <span class="logo-subtext">Garment Tender Tracker</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-page="dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="#" class="nav-item" data-page="table"><span class="nav-icon">📋</span> All Bids <span class="badge" id="new-badge">0</span></a>
+      <a href="#" class="nav-item" data-page="tracker"><span class="nav-icon">🗂</span> My Applications</a>
+      <a href="#" class="nav-item" data-page="charts"><span class="nav-icon">📈</span> Charts</a>
+      <a href="#" class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span> Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-crawl" id="crawl-now-btn" onclick="crawlNow()">🔍 Crawl Now</button>
+      <button class="btn-links" onclick="checkLinksNow()" title="Verify all bid URLs">🔗 Check Links</button>
+      <div class="last-crawl" id="last-crawl-info">Last crawl: —</div>
+      <div class="sidebar-credits">
+        <div class="credit-brand">Powered by <strong>Fashion-Flow 2026</strong></div>
+        <div class="credit-author">Created by <strong>Enquzer Getachew</strong></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+        <h1 class="page-title" id="page-title">Dashboard</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="time-display" id="clock"></div>
+        <div class="notification-pill" onclick="showPage('tracker')" title="CPO refunds pending">💰 <span id="cpo-count">0</span> CPO</div>
+        <div class="notification-bell" onclick="showPage('table')" title="Unread bids">🔔 <span id="bell-count">0</span></div>
+      </div>
+    </header>
+
+    <!-- ════════════ DASHBOARD ════════════ -->
+    <section id="page-dashboard" class="page active">
+      <div class="stat-cards">
+        <div class="stat-card stat-total"  onclick="showPage('table')">
+          <div class="stat-number" id="stat-total">—</div><div class="stat-label">Total Bids</div>
+        </div>
+        <div class="stat-card stat-active" onclick="showPage('table')">
+          <div class="stat-number" id="stat-active">—</div><div class="stat-label">Active Bids</div>
+        </div>
+        <div class="stat-card stat-new"    onclick="showPage('table')">
+          <div class="stat-number" id="stat-new">—</div><div class="stat-label">New Today</div>
+        </div>
+        <div class="stat-card stat-urgent" onclick="showPage('table')">
+          <div class="stat-number" id="stat-urgent">—</div><div class="stat-label">Closing ≤30h</div>
+        </div>
+        <div class="stat-card stat-dead"   onclick="showPage('table')">
+          <div class="stat-number" id="stat-dead">—</div><div class="stat-label">Dead Links</div>
+        </div>
+        <div class="stat-card stat-cpo"    onclick="showPage('tracker')">
+          <div class="stat-number" id="stat-cpo">—</div><div class="stat-label">CPO to Collect</div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="card"><h3>Bids by Category</h3><div class="chart-wrapper"><canvas id="chart-category"></canvas></div></div>
+        <div class="card"><h3>My Application Pipeline</h3><div class="chart-wrapper"><canvas id="chart-pipeline"></canvas></div></div>
+        <div class="card wide"><h3>Upcoming Deadlines — Next 14 Days</h3><div class="chart-wrapper"><canvas id="chart-timeline"></canvas></div></div>
+      </div>
+
+      <div class="two-col-grid">
+        <div class="card">
+          <h3>🚨 Closing Within 30 Hours</h3>
+          <div id="urgent-list" class="mini-list"></div>
+        </div>
+        <div class="card">
+          <h3>💰 CPO / Security Refunds Pending</h3>
+          <div id="cpo-list" class="mini-list"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🆕 Recently Found Bids</h3>
+        <div id="recent-list" class="mini-list"></div>
+      </div>
+    </section>
+
+    <!-- ════════════ ALL BIDS TABLE ════════════ -->
+    <section id="page-table" class="page">
+      <div class="filter-bar">
+        <input type="text" id="filter-search" placeholder="🔍 Search…" oninput="debounce(loadTable,400)()"/>
+        <select id="filter-category" onchange="loadTable()">
+          <option value="">All Categories</option>
+          <option>General Uniform</option><option>Medical Uniform</option>
+          <option>School Uniform</option><option>Military/Security Uniform</option>
+          <option>Sportswear</option><option>Workwear/PPE</option>
+          <option>T-Shirt / Polo</option><option>Trousers / Bottoms</option>
+          <option>Fabric / Textile</option><option>Garment</option>
+        </select>
+        <select id="filter-site" onchange="loadTable()"><option value="">All Sites</option></select>
+        <select id="filter-appstatus" onchange="loadTable()">
+          <option value="">All Statuses</option>
+          <option value="not_applied">Not Applied</option>
+          <option value="doc_purchased">Doc Purchased</option>
+          <option value="cpo_delivered">CPO Delivered</option>
+          <option value="applied">Applied</option>
+          <option value="sample_delivered">Sample Delivered</option>
+          <option value="secured">Secured ✅</option>
+          <option value="failed">Failed ❌</option>
+          <option value="cancelled">Cancelled 🚫</option>
+        </select>
+        <select id="filter-days" onchange="loadTable()">
+          <option value="0">All Deadlines</option>
+          <option value="3">Next 3 days</option><option value="7">Next 7 days</option>
+          <option value="14">Next 14 days</option><option value="30">Next 30 days</option>
+        </select>
+        <label class="cb-label"><input type="checkbox" id="filter-expired" onchange="loadTable()"/> Show closed (this month)</label>
+        <label class="cb-label"><input type="checkbox" id="filter-hide-dead" onchange="loadTable()"/> Hide dead links</label>
+        <div class="filter-actions">
+          <button onclick="exportExcel()" class="btn-export" style="background:#107c41;color:#fff;border-color:#0e6b37" title="Export current list to formatted Excel spreadsheet">📊 Excel (.xlsx)</button>
+          <button onclick="exportCSV()" class="btn-secondary" title="Export as CSV">⬇ CSV</button>
+          <button onclick="markAllRead()" class="btn-secondary">✓ Mark read</button>
+        </div>
+      </div>
+
+      <div class="table-scroll-wrapper">
+        <table class="bids-tbl" id="bids-table">
+          <thead>
+            <tr>
+              <th class="col-status" data-sort="application_status">Status</th>
+              <th class="col-title"  data-sort="title">Title / Ref</th>
+              <th class="col-co"     data-sort="company">Company</th>
+              <th class="col-cat">Category</th>
+              <th class="col-dl"     data-sort="deadline">Deadline</th>
+              <th class="col-fee"    data-sort="registration_fee">Doc Fee</th>
+              <th class="col-sec">Security</th>
+              <th class="col-amt"    data-sort="bid_security_amount">Sec. Amount</th>
+              <th class="col-loc"    data-sort="location">Apply At</th>
+              <th class="col-con">Contact</th>
+              <th class="col-link">Link</th>
+              <th class="col-act">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bids-tbody"></tbody>
+        </table>
+        <div id="table-empty" class="table-empty" style="display:none">
+          No garment bids match your filters. Try clicking <strong>Crawl Now</strong>.
+        </div>
+      </div>
+      <div class="table-footer">
+        <div class="table-footer-left">
+          <span id="table-count">0 bids</span>
+          <div class="page-size-wrap">
+            <label for="page-size-select" class="page-size-lbl">Rows:</label>
+            <select id="page-size-select" class="page-size-select" onchange="changePageSize(this.value)">
+              <option value="30" selected>30 per page</option>
+              <option value="50">50 per page</option>
+              <option value="100">100 per page</option>
+              <option value="all">Full List (All)</option>
+            </select>
+          </div>
+        </div>
+        <div class="pagination-wrapper">
+          <div class="pagination" id="pagination"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════ MY APPLICATIONS TRACKER ════════════ -->
+    <section id="page-tracker" class="page">
+      <div class="tracker-header-box">
+        <div class="tracker-header-info">
+          <h2>🗂 My Application Tracker</h2>
+          <p class="tracker-sub">Track every garment bid from document purchase through CPO delivery, sampling, submission, and final award.</p>
+        </div>
+        <div class="tracker-view-controls">
+          <div class="view-toggle-group">
+            <button class="toggle-btn active" id="btn-view-cards" onclick="setTrackerView('cards')">🗂 Cards (Kanban)</button>
+            <button class="toggle-btn" id="btn-view-table" onclick="setTrackerView('table')">📋 Status Table</button>
+            <button class="toggle-btn" id="btn-view-both" onclick="setTrackerView('both')">🔄 Cards & Table</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick KPI Summary Chips -->
+      <div class="tracker-kpi-bar" id="tracker-kpi-bar"></div>
+
+      <!-- CPO Refund Alert Banner -->
+      <div class="cpo-alert" id="cpo-alert" style="display:none">
+        <strong>💰 Action Needed: CPO / Bid Security Refunds to Collect</strong>
+        <p style="font-size:13px;color:#854d0e;margin-bottom:12px;">The following bids were not awarded or cancelled. Please collect your bank guarantee / CPO deposit from the procuring institution:</p>
+        <div id="cpo-alert-list"></div>
+      </div>
+
+      <!-- 1. Kanban Board (Cards View) -->
+      <div id="tracker-cards-container">
+        <div class="kanban-board" id="kanban-board">
+          <!-- Columns rendered by JS -->
+        </div>
+      </div>
+
+      <!-- 2. Application Status Table (Table View) -->
+      <div id="tracker-table-container">
+        <div class="app-table-header">
+          <h3>📋 Application Status & Stage Timeline Table</h3>
+          <div class="app-table-filters">
+            <input type="text" id="app-table-search" placeholder="🔍 Search applications…" oninput="renderAppTable()"/>
+            <select id="app-table-filter-stage" onchange="renderAppTable()">
+              <option value="">All Stages</option>
+              <option value="active">Active (In Progress)</option>
+              <option value="doc_purchased">Doc Purchased</option>
+              <option value="cpo_delivered">CPO Delivered</option>
+              <option value="applied">Applied</option>
+              <option value="sample_delivered">Sample Delivered</option>
+              <option value="secured">Secured ✅</option>
+              <option value="failed">Failed ❌</option>
+              <option value="cancelled">Cancelled 🚫</option>
+              <option value="cpo_pending">CPO Refund Pending 💰</option>
+            </select>
+            <button onclick="exportExcel()" class="btn-export" style="background:#107c41;color:#fff;border-color:#0e6b37;font-size:12px;padding:6px 12px" title="Export tracker to Excel">📊 Export Excel</button>
+          </div>
+        </div>
+        <div class="table-scroll-wrapper">
+          <table class="bids-tbl" id="app-status-tbl">
+            <thead>
+              <tr>
+                <th style="width:10%">Current Stage</th>
+                <th style="width:20%">Bid Title & Ref</th>
+                <th style="width:14%">Company</th>
+                <th style="width:7.5%">Category</th>
+                <th style="width:12%">Pipeline Progress</th>
+                <th style="width:9%">Closing Deadline</th>
+                <th style="width:9%">Bid Security</th>
+                <th style="width:7.5%">CPO Recovery</th>
+                <th style="width:7%">Notes & Milestones</th>
+                <th style="width:4%">Action</th>
+              </tr>
+            </thead>
+            <tbody id="app-table-tbody"></tbody>
+          </table>
+          <div id="app-table-empty" class="table-empty" style="display:none">
+            No applications match this filter.
+          </div>
+        </div>
+        <div class="table-footer">
+          <div class="table-footer-left">
+            <span id="app-table-count">0 applications</span>
+            <div class="page-size-wrap">
+              <label for="app-page-size-select" class="page-size-lbl">Rows:</label>
+              <select id="app-page-size-select" class="page-size-select" onchange="changeAppPageSize(this.value)">
+                <option value="30" selected>30 per page</option>
+                <option value="50">50 per page</option>
+                <option value="100">100 per page</option>
+                <option value="all">Full List (All)</option>
+              </select>
+            </div>
+          </div>
+          <div class="pagination-wrapper">
+            <div class="pagination" id="app-table-pagination"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════ CHARTS ════════════ -->
+    <section id="page-charts" class="page">
+      <div class="charts-grid">
+        <div class="card"><h3>Category Breakdown</h3><div class="chart-wrapper"><canvas id="chart-cat-donut"></canvas></div></div>
+        <div class="card"><h3>Bid Security Types</h3><div class="chart-wrapper"><canvas id="chart-sectype"></canvas></div></div>
+        <div class="card"><h3>Top Bid Security Amounts (ETB)</h3><div class="chart-wrapper"><canvas id="chart-security-bar"></canvas></div></div>
+        <div class="card"><h3>Bids by Source Site</h3><div class="chart-wrapper"><canvas id="chart-site-bar"></canvas></div></div>
+        <div class="card wide"><h3>Deadline Timeline</h3><div class="chart-wrapper wide-chart"><canvas id="chart-deadline-bar"></canvas></div></div>
+        <div class="card wide"><h3>Application Pipeline Summary</h3><div class="chart-wrapper wide-chart"><canvas id="chart-pipeline-full"></canvas></div></div>
+      </div>
+    </section>
+
+    <!-- ════════════ SETTINGS ════════════ -->
+    <section id="page-settings" class="page">
+      <div class="settings-grid">
+        <div class="card">
+          <h3>⏱ Crawler Schedule</h3>
+          <div class="form-group"><label>Crawl Interval (hours)</label><input type="number" id="set-interval" min="1" max="24" value="6"/></div>
+          <div class="form-group"><label>Remind before deadline (hours)</label><input type="number" id="set-reminder" min="1" max="72" value="30"/></div>
+          <div class="form-group row"><label><input type="checkbox" id="set-notif-enabled" checked/> Enable Notifications</label></div>
+          <div class="form-group row"><label><input type="checkbox" id="set-sound-enabled" checked/> Enable Sound</label></div>
+          <button onclick="saveGeneralSettings()" class="btn-primary">💾 Save</button>
+        </div>
+        <div class="card">
+          <h3>🏷 Garment Keywords</h3>
+          <p class="help-text">One keyword per line. The crawler captures any bid matching these.</p>
+          <textarea id="set-keywords" rows="14"></textarea>
+          <button onclick="saveKeywords()" class="btn-primary" style="margin-top:10px">💾 Save Keywords</button>
+        </div>
+        <div class="card full-width">
+          <h3>🔑 Site Credentials</h3>
+          <div id="credentials-list" class="cred-grid"></div>
+          <button onclick="saveCredentials()" class="btn-primary">💾 Save Credentials</button>
+        </div>
+        <div class="card full-width">
+          <h3>📜 Crawl Logs</h3>
+          <div id="crawl-logs"></div>
+        </div>
+        <div class="card full-width" style="background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%);color:#f8fafc;border:1px solid #334155">
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <img src="/static/favicon.svg?v=2.2" alt="BidScouter Logo" style="width:56px;height:56px;border-radius:12px"/>
+            <div style="flex:1">
+              <h3 style="color:#f8fafc;margin:0 0 4px 0;font-size:17px">BidScouter — Ethiopian Garment Tender Intelligence</h3>
+              <p style="color:#94a3b8;font-size:13px;margin:0 0 6px 0">Automated procurement surveillance and application pipeline manager for garment factories.</p>
+              <div style="display:flex;gap:16px;font-size:12px;color:#cbd5e1;flex-wrap:wrap">
+                <span>⚡ Powered by <strong>Fashion-Flow 2026</strong></span>
+                <span>👤 Created by <strong>Enquzer Getachew</strong></span>
+                <span>🎯 Version <strong>2.2 (2026 Edition)</strong></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ════════════ BID DETAIL MODAL ════════════ -->
+  <div id="bid-modal" class="modal-overlay" onclick="closeModalOverlay(event)">
+    <div class="modal-box" id="modal-box">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <!-- ════════════ STATUS UPDATE MODAL ════════════ -->
+  <div id="status-modal" class="modal-overlay" onclick="closeStatusModalOverlay(event)">
+    <div class="modal-box small">
+      <button class="modal-close" onclick="closeStatusModal()">✕</button>
+      <h3 style="margin-bottom:14px">Update Application Status</h3>
+      <div id="status-modal-content"></div>
+    </div>
+  </div>
+
+  <!-- ════════════ REQUIRED DOCUMENTS MODAL ════════════ -->
+  <div id="docs-modal" class="modal-overlay" onclick="closeDocsModalOverlay(event)">
+    <div class="modal-box medium" id="docs-modal-box" style="max-width:780px">
+      <button class="modal-close" onclick="closeDocsModal()">✕</button>
+      <div id="docs-modal-content"></div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script src="/static/js/app.js?v=2.2"></script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="50%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#1E3A8A"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCD34D"/>
+      <stop offset="50%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+    <linearGradient id="needleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="70%" stop-color="#E2E8F0"/>
+      <stop offset="100%" stop-color="#94A3B8"/>
+    </linearGradient>
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- Base Rounded Container -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle Outer Rim Border -->
+  <rect x="12" y="12" width="488" height="488" rx="100" fill="none" stroke="#38BDF8" stroke-width="4" stroke-opacity="0.25"/>
+
+  <!-- Radar / Scout Rings (Radar Target) -->
+  <g filter="url(#shadow)">
+    <!-- Outer Radar Ring -->
+    <circle cx="256" cy="256" r="180" fill="none" stroke="url(#goldGrad)" stroke-width="8" stroke-dasharray="16 10" stroke-opacity="0.6"/>
+    
+    <!-- Middle Target Ring -->
+    <circle cx="256" cy="256" r="125" fill="none" stroke="url(#goldGrad)" stroke-width="10" stroke-opacity="0.85"/>
+    
+    <!-- Inner Target Ring -->
+    <circle cx="256" cy="256" r="70" fill="#1E293B" stroke="url(#goldGrad)" stroke-width="8"/>
+    
+    <!-- Radar Crosshairs -->
+    <line x1="256" y1="56" x2="256" y2="116" stroke="url(#goldGrad)" stroke-width="8" stroke-linecap="round"/>
+    <line x1="256" y1="396" x2="256" y2="456" stroke="url(#goldGrad)" stroke-width="8" stroke-linecap="round"/>
+    <line x1="56" y1="256" x2="116" y2="256" stroke="url(#goldGrad)" stroke-width="8" stroke-linecap="round"/>
+    <line x1="396" y1="256" x2="456" y2="256" stroke="url(#goldGrad)" stroke-width="8" stroke-linecap="round"/>
+  </g>
+
+  <!-- Garment / Collar / Lapel Silhouette -->
+  <path d="M 170 370 L 256 430 L 342 370 L 310 280 L 256 315 L 202 280 Z" fill="#0EA5E9" fill-opacity="0.2" stroke="#38BDF8" stroke-width="5" stroke-linejoin="round"/>
+
+  <!-- Sewing Needle & Thread (Garment Crafting / Factory Symbol) -->
+  <!-- Golden Thread Dynamic Curve -->
+  <path d="M 110 390 C 130 220, 240 180, 290 220 C 330 250, 310 340, 256 340 C 220 340, 210 290, 240 260" fill="none" stroke="url(#goldGrad)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Precision Sewing Needle passing diagonally through target center -->
+  <g transform="rotate(-38 256 256)" filter="url(#shadow)">
+    <!-- Needle Body -->
+    <path d="M 252 50 L 260 50 L 262 390 L 256 460 L 250 390 Z" fill="url(#needleGrad)"/>
+    <!-- Needle Eye Hole -->
+    <ellipse cx="256" cy="95" rx="3.5" ry="16" fill="#0F172A"/>
+  </g>
+
+  <!-- Active Signal Beacon (Live Tender Found Pulse) -->
+  <circle cx="256" cy="256" r="22" fill="url(#emeraldGrad)" filter="url(#shadow)"/>
+  <circle cx="256" cy="256" r="10" fill="#FFFFFF"/>
+</svg>

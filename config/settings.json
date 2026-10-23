@@ -1,0 +1,127 @@
+{
+  "crawler": {
+    "interval_hours": 5
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "port": 7800
+  },
+  "notifications": {
+    "enabled": true,
+    "sound_enabled": true,
+    "reminder_hours_before": 30
+  },
+  "keywords": {
+    "primary": [
+      "uniform",
+      "t-shirt",
+      "tshirt",
+      "polo shirt",
+      "polo",
+      "trouser",
+      "trouser",
+      "sportswear",
+      "sport wear",
+      "workwear",
+      "work wear",
+      "overalls",
+      "coverall",
+      "garment",
+      "apparel",
+      "clothing",
+      "textile",
+      "fabric",
+      "wearable",
+      "hospital gown",
+      "scrubs",
+      "medical uniform",
+      "school uniform",
+      "military uniform",
+      "security uniform",
+      "jacket",
+      "vest",
+      "apron",
+      "shirt",
+      "blouse",
+      "dress",
+      "skirt",
+      "shorts",
+      "legging",
+      "sock",
+      "protective clothing",
+      "PPE",
+      "high visibility",
+      "hi-visibility",
+      "hi-vis",
+      "workwear"
+    ]
+  },
+  "credentials": {
+    "sites": [
+      {
+        "id": "eprocurement",
+        "name": "Ethiopian e-Procurement Portal",
+        "url": "https://production.egp.gov.et/egp/home",
+        "username": "",
+        "password": "",
+        "enabled": true
+      },
+      {
+        "id": "ppaa",
+        "name": "PPAA Portal",
+        "url": "https://www.ppaa.gov.et",
+        "username": "",
+        "password": "",
+        "enabled": true
+      },
+      {
+        "id": "mertender",
+        "name": "MerTender",
+        "url": "https://mertender.com",
+        "username": "",
+        "password": "",
+        "enabled": true
+      },
+      {
+        "id": "ungm",
+        "name": "UN Global Marketplace",
+        "url": "https://www.ungm.org",
+        "username": "",
+        "password": "",
+        "enabled": true
+      },
+      {
+        "id": "addiszemen",
+        "name": "Addis Zemen Tenders",
+        "url": "https://www.addiszemen.com/tenders",
+        "username": "",
+        "password": "",
+        "enabled": true
+      },
+      {
+        "id": "ethiopianreporter",
+        "name": "Ethiopian Reporter Tenders",
+        "url": "https://www.ethiopianreporter.com",
+        "username": "",
+        "password": "",
+        "enabled": true
+      },
+      {
+        "id": "ethiotender",
+        "name": "EthioTender",
+        "url": "https://ethiotender.com",
+        "username": "",
+        "password": "",
+        "enabled": true
+      },
+      {
+        "id": "mercato",
+        "name": "Mercato Tenders",
+        "url": "https://mercato.com.et",
+        "username": "",
+        "password": "",
+        "enabled": true
+      }
+    ]
+  }
+}
